@@ -38,8 +38,8 @@ const lightProducts = [
   },
   {
     name: 'RGBW 120W',
-    description: 'LED COB RGBW-UV chất lượng cao, ánh sáng trung thực, tôn màu cây cá. Hợp hồ Biotop, đá suối, cá dĩa và Blue Mahseer.',
-    specs: ['120W', 'Hồ 60–80 cm', '4 kênh R/G/B/W độc lập', 'BLE/WiFi', 'BH 6 tháng'],
+    description: 'LED COB RGBW-UV 120W chất lượng cao, công suất lớn, ánh sáng trung thực, tôn màu cây cá. Hợp hồ Biotop, đá suối, cá dĩa và Blue Mahseer, đánh rêu.',
+    specs: ['120W', 'Hồ 80–100 cm', '4 kênh R/G/B/W độc lập', 'BLE/WiFi', 'BH 6 tháng'],
     images: [
       'img/rgbw120w/rgbw120w_1.jpg',
       'img/rgbw120w/rgbw120w_2.jpg',
