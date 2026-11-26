@@ -37,6 +37,19 @@ const lightProducts = [
     ]
   },
   {
+    name: 'RGBW 120W',
+    description: 'LED COB RGBW-UV chất lượng cao, ánh sáng trung thực, tôn màu cây cá. Hợp hồ Biotop, đá suối, cá dĩa và Blue Mahseer.',
+    specs: ['120W', 'Hồ 60–80 cm', '4 kênh R/G/B/W độc lập', 'BLE/WiFi', 'BH 6 tháng'],
+    images: [
+      'img/rgbw120w/rgbw120w_1.jpg',
+      'img/rgbw120w/rgbw120w_2.jpg',
+      'img/rgbw120w/rgbw120w_3.jpg',
+      'img/rgbw120w/rgbw120w_4.jpg',
+      'img/rgbw120w/rgbw120w_5.jpg',
+      'img/rgbw120w/rgbw120w_6.jpg'
+    ]
+  },
+  {
     name: 'UFO RGBW 80W',
     description: 'LED COB RGBW-UV chất lượng cao, ánh sáng trung thực, tôn màu cây cá. Hợp hồ Biotop, đá suối, cá dĩa và Blue Mahseer.',
     specs: ['80W', 'Hồ 60–80 cm', '4 kênh R/G/B/W độc lập', 'LED viền: màu & hiệu ứng', 'BLE/WiFi', 'BH 6 tháng'],
@@ -71,8 +84,34 @@ if (lightsGrid && lightDialog) {
   const photoCount = document.getElementById('light-photo-count');
   const previousPhoto = document.getElementById('light-photo-prev');
   const nextPhoto = document.getElementById('light-photo-next');
+  const previousProduct = document.getElementById('light-product-prev');
+  const nextProduct = document.getElementById('light-product-next');
+  const productCount = document.getElementById('light-product-count');
   let activeProduct = null;
   let galleryTrigger = null;
+  let activeCard = null;
+
+  const activateCard = (card, centerCard = true) => {
+    if (!card) return;
+    activeCard?.classList.remove('is-active');
+    activeCard?.removeAttribute('aria-current');
+    activeCard = card;
+    activeCard.classList.add('is-active');
+    activeCard.setAttribute('aria-current', 'true');
+
+    const cards = [...lightsGrid.querySelectorAll('.light-card')];
+    const activeIndex = cards.indexOf(activeCard);
+    previousProduct.hidden = activeIndex <= 0;
+    nextProduct.hidden = activeIndex >= cards.length - 1;
+    productCount.textContent = `${activeIndex + 1} / ${cards.length}`;
+
+    if (centerCard) {
+      const gridBounds = lightsGrid.getBoundingClientRect();
+      const cardBounds = activeCard.getBoundingClientRect();
+      const targetLeft = lightsGrid.scrollLeft + cardBounds.left - gridBounds.left - (lightsGrid.clientWidth - cardBounds.width) / 2;
+      lightsGrid.scrollTo({ left: targetLeft, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  };
 
   const updatePhotoControls = () => {
     if (!activeProduct || !photoTrack.clientWidth) return;
@@ -90,6 +129,7 @@ if (lightsGrid && lightDialog) {
     card.setAttribute('aria-haspopup', 'dialog');
     card.setAttribute('aria-labelledby', `${productId}-title`);
     card.setAttribute('aria-describedby', `${productId}-description ${productId}-specs ${productId}-price`);
+    card.addEventListener('focus', () => activateCard(card));
     card.innerHTML = `
       <span class="light-cover"><img src="${product.images[0]}" alt="Đèn ${product.name}" loading="lazy" decoding="async" width="800" height="600"></span>
       <span class="light-card-body">
@@ -99,6 +139,7 @@ if (lightsGrid && lightDialog) {
         <span class="light-card-bottom"><strong id="${productId}-price">Giá: Liên hệ</strong><span><i class="fas fa-images" aria-hidden="true"></i> ${product.images.length} ảnh</span></span>
       </span>`;
     card.addEventListener('click', () => {
+      activateCard(card);
       activeProduct = product;
       galleryTrigger = card;
       document.getElementById('light-dialog-title').textContent = product.name;
@@ -124,6 +165,35 @@ if (lightsGrid && lightDialog) {
     });
     lightsGrid.append(card);
   });
+
+  activateCard(lightsGrid.querySelector('.light-card'));
+  let cardScrollEndTimer = 0;
+  lightsGrid.addEventListener('scroll', () => {
+    window.clearTimeout(cardScrollEndTimer);
+    cardScrollEndTimer = window.setTimeout(() => {
+      const gridCenter = lightsGrid.getBoundingClientRect().left + lightsGrid.clientWidth / 2;
+      const centeredCard = [...lightsGrid.querySelectorAll('.light-card')].reduce((closest, card) => {
+        const bounds = card.getBoundingClientRect();
+        const distance = Math.abs(bounds.left + bounds.width / 2 - gridCenter);
+        return !closest || distance < closest.distance ? { card, distance } : closest;
+      }, null);
+      activateCard(centeredCard?.card, false);
+    }, 120);
+  }, { passive: true });
+
+  const moveProduct = (direction) => {
+    const cards = [...lightsGrid.querySelectorAll('.light-card')];
+    const nextIndex = Math.max(0, Math.min(cards.length - 1, cards.indexOf(activeCard) + direction));
+    activateCard(cards[nextIndex]);
+  };
+  previousProduct.addEventListener('click', () => moveProduct(-1));
+  nextProduct.addEventListener('click', () => moveProduct(1));
+  lightsGrid.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    moveProduct(event.key === 'ArrowRight' ? 1 : -1);
+  });
+  window.addEventListener('resize', () => activateCard(activeCard));
 
   const movePhoto = (direction) => {
     const index = Math.round(photoTrack.scrollLeft / photoTrack.clientWidth);
